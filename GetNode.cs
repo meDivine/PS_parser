@@ -7,126 +7,122 @@ namespace PS_parser
 {
     internal class GetNode
     {
-        private List<string> _gamesId = new();
-        private HtmlNodeCollection _nodes;
         static IList<IList<object>> _gamesInfo = new List<IList<object>>();
         static object lockObject = new object();
-        static int threadCount = 5;
-        static CountdownEvent countdownEvent = new CountdownEvent(threadCount);
-
-        private async Task GetGamesRequest()
-        {
-            using var client = new HttpClient();
-            var htmlDoc = new HtmlDocument();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; AcmeInc/1.0)");
-
-            string pagesPS5 = await client.GetStringAsync($"https://store.playstation.com/en-tr/category/4cbf39e2-5749-4970-ba81-93a489e4570c/1");
-            htmlDoc.LoadHtml(pagesPS5);
-            var parseMaxPagesPS5 = htmlDoc.DocumentNode.SelectSingleNode("(//span[@class='psw-fill-x '])[5]");
-            string maxPagePS5 = parseMaxPagesPS5.InnerText;
-
-            for (int i = 1; i <= int.Parse(maxPagePS5); i++)
-            { 
-                string htmlCode = await client.GetStringAsync($"https://store.playstation.com/en-tr/category/4cbf39e2-5749-4970-ba81-93a489e4570c/{i}");
-               
-                htmlDoc.LoadHtml(htmlCode);
-                _nodes = htmlDoc.DocumentNode.SelectNodes("//ul[@class='psw-grid-list psw-l-grid']");
-                Console.WriteLine($"PS 5 Спарсил стриницу: {i}/{maxPagePS5}");
-                if (this._nodes != null)
-                {
-                    foreach (var headerNode in this._nodes)
-                    {
-                        var headerText = headerNode.InnerHtml;
-                        var pattern = @"href=""/en-tr/product/(.*?)""";
-                        MatchCollection matches = Regex.Matches(headerText, pattern);
-
-                        foreach (Match match in matches.Cast<Match>())
-                        {
-                            if (match.Groups.Count > 1)
-                            {
-                                string hrefValue = match.Groups[1].Value;
-                                _gamesId.Add(hrefValue);
-                            }
-                        }
-                    }
-                }
-            }
-
-            
-            string pagesPS4 = await client.GetStringAsync($"https://store.playstation.com/en-tr/category/44d8bb20-653e-431e-8ad0-c0a365f68d2f/1");
-            htmlDoc.LoadHtml(pagesPS4);
-            var parseMaxPages = htmlDoc.DocumentNode.SelectSingleNode("(//span[@class='psw-fill-x '])[5]");
-            string maxPage = parseMaxPages.InnerText;
-
-            for (int i = 1; i <= int.Parse(maxPage); i++)
-            {
-                string htmlCode = await client.GetStringAsync($"https://store.playstation.com/en-tr/category/44d8bb20-653e-431e-8ad0-c0a365f68d2f/{i}");
-
-                htmlDoc.LoadHtml(htmlCode);
-                _nodes = htmlDoc.DocumentNode.SelectNodes("//ul[@class='psw-grid-list psw-l-grid']");
-                Console.WriteLine($"PS4 Спарсил стриницу: {i}/{maxPage}");
-                if (this._nodes != null)
-                {
-                    foreach (var headerNode in this._nodes)
-                    {
-                        var headerText = headerNode.InnerHtml;
-                        var pattern = @"href=""/en-tr/product/(.*?)""";
-                        MatchCollection matches = Regex.Matches(headerText, pattern);
-
-                        foreach (Match match in matches.Cast<Match>())
-                        {
-                            if (match.Groups.Count > 1)
-                            {
-                                string hrefValue = match.Groups[1].Value;
-                                _gamesId.Add(hrefValue);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
+        static int threadCount = 15;
+        static CountdownEvent countdownEvent = new(threadCount);
 
         public async Task StartThreadsPS5()
         {
-            await GetGamesRequest();
+            var GetGames = new ParseGameId();
+            var gamesId = await GetGames.GetGamesRequest();
 
-            int count = _gamesId.Count / 5;
+            int count = gamesId.Count / 15;
 
-            var _listThreadOne = _gamesId.Take(count).ToList();
-            var _listThreadTwo = _gamesId.Skip(count ).Take(count).ToList();
-            var _listThreadThree = _gamesId.Skip(count * 2).Take(count).ToList();
-            var _listThreadFour = _gamesId.Skip(count * 3).Take(count).ToList();
-            var _listThreadFive = _gamesId.Skip(count * 4).Take(count).ToList();
+            var _listThreadOne = gamesId.Take(count).ToList();
+            var _listThreadTwo = gamesId.Skip(count ).Take(count).ToList();
+            var _listThreadThree = gamesId.Skip(count * 2).Take(count).ToList();
+            var _listThreadFour = gamesId.Skip(count * 3).Take(count).ToList();
+            var _listThreadFive = gamesId.Skip(count * 4).Take(count).ToList();
+            var _listThreadSix = gamesId.Skip(count * 5).Take(count).ToList();
+            var _listThreadSeven = gamesId.Skip(count * 6).Take(count).ToList();
+            var _listThreadEight = gamesId.Skip(count * 7).Take(count).ToList();
+            var _listThreadNine = gamesId.Skip(count * 8).Take(count).ToList();
+            var _listThreadTen = gamesId.Skip(count * 9).Take(count).ToList();
+            var _listThreadEleven = gamesId.Skip(count * 10).Take(count).ToList();
+            var _listThreadTwelve = gamesId.Skip(count * 11).Take(count).ToList();
+            var _listThreadThirteen = gamesId.Skip(count * 12).Take(count).ToList();
+            var _listThreadFourteen = gamesId.Skip(count * 13).Take(count).ToList();
+            var _listThreadFifteen = gamesId.Skip(count * 13).Take(count).ToList();
 
             var google = new SheetsApi();
 
             var thread = new Thread(() =>
             {
                 ReadGameInfo(_listThreadOne,1 );
-                Console.WriteLine("начал первый поток");
+                Console.WriteLine("Thread 1 started");
             });
             var threadTwo = new Thread(() =>
             {
                 ReadGameInfo(_listThreadTwo,2 );
-                Console.WriteLine("начал второй поток");
+                Console.WriteLine("Thread 2 started");
             });
             var threadThree = new Thread(() =>
             {
                 ReadGameInfo(_listThreadThree, 3);
-                Console.WriteLine("начал третий поток");
+                Console.WriteLine("Thread 3 started");
             });
 
             var threadFour = new Thread(() =>
             {
                 ReadGameInfo(_listThreadFour, 4);
-                Console.WriteLine("начал четвёртый поток");
+                Console.WriteLine("Thread 4 started");
             });
 
             var threadFive = new Thread(() =>
             {
                 ReadGameInfo(_listThreadFive, 5);
-                Console.WriteLine("начал пятый поток");
+                Console.WriteLine("Thread 5 started");
+            });
+
+            var threadSix = new Thread(() =>
+            {
+                ReadGameInfo(_listThreadSix, 6);
+                Console.WriteLine("Thread 6 started");
+            });
+
+            var threadSeven = new Thread(() =>
+            {
+                ReadGameInfo(_listThreadSeven, 7);
+                Console.WriteLine("Thread 7 started");
+            });
+
+            var threadEight = new Thread(() =>
+            {
+                ReadGameInfo(_listThreadEight, 8);
+                Console.WriteLine("Thread 8 started");
+            });
+
+            var threadNine = new Thread(() =>
+            {
+                ReadGameInfo(_listThreadNine, 9);
+                Console.WriteLine("Thread 9 started");
+            });
+
+            var threadTen = new Thread(() =>
+            {
+                ReadGameInfo(_listThreadTen, 10);
+                Console.WriteLine("Thread 10 started");
+            });
+
+            var threadEleven = new Thread(() =>
+            {
+                ReadGameInfo(_listThreadEleven, 11);
+                Console.WriteLine("Thread 11 started");
+            });
+            
+            var threadTwelve = new Thread(() =>
+            {
+                ReadGameInfo(_listThreadTwelve, 12);
+                Console.WriteLine("Thread 12 started");
+            });
+
+            var threadThirteen = new Thread(() =>
+            {
+                ReadGameInfo(_listThreadThirteen, 13);
+                Console.WriteLine("Thread 13 started");
+            });
+
+            var threadFourteen = new Thread(() =>
+            {
+                ReadGameInfo(_listThreadFourteen, 14);
+                Console.WriteLine("Thread 14 started");
+            });
+
+            var threadFifteen = new Thread(() =>
+            {
+                ReadGameInfo(_listThreadFifteen, 15);
+                Console.WriteLine("Thread 15 started");
             });
 
             thread.Start();
@@ -134,15 +130,22 @@ namespace PS_parser
             threadThree.Start();
             threadFour.Start();
             threadFive.Start();
+            threadSix.Start();
+            threadSeven.Start();
+            threadEight.Start();
+            threadNine.Start();
+            threadTen.Start();
+            threadEleven.Start();
+            threadTwelve.Start();
+            threadThirteen.Start();
+            threadFourteen.Start();
+            threadFifteen.Start();
 
-            Console.WriteLine("Запустил потоки");
+            Console.WriteLine("All threads started");
             countdownEvent.Wait();
-            Console.WriteLine("Потоки закончились");
-            if (thread.ThreadState == ThreadState.Stopped && threadTwo.ThreadState == ThreadState.Stopped && threadThree.ThreadState == ThreadState.Stopped && threadFour.ThreadState == ThreadState.Stopped && threadFive.ThreadState == ThreadState.Stopped)
-            {
-                Console.WriteLine("All threads have finished. Calling the final method...");
-                google.ReadEntries(_gamesInfo);
-            }
+            Console.WriteLine("Write game data in google sheets...");
+            google.ReadEntries(_gamesInfo);
+            Console.WriteLine("Table entry completed");
         }
 
 
@@ -151,16 +154,17 @@ namespace PS_parser
             var helper = new Helpers();
             var htmlDoc = new HtmlDocument();
             var node = new GetNode();
-
             var request = new Request();
             Log.Logger = new LoggerConfiguration()
-            .WriteTo.File("log.txt") 
-            .CreateLogger();
+                .WriteTo.File("log.txt") 
+                .CreateLogger();
+
             int res = 0;
+            string gameInfo;
+
             try {
                 foreach (var game in gameList)
                 {   
-                    //string htmlCode = await client.GetStringAsync($"https://store.playstation.com/en-tr/product/EP1194-PPSA13426_00-0708275145281875");
                     var htmlCode = await request.GetRequestGameInfo(game);
                     htmlDoc.LoadHtml(htmlCode);
 
@@ -177,7 +181,7 @@ namespace PS_parser
                     var versionLine = htmlDoc.DocumentNode.SelectSingleNode("//dd[@data-qa='gameInfo#releaseInformation#platform-value']");
 
                     var headerText = gameTitle?.InnerText;
-                    var priceOne = priceFirstLine.InnerText;
+                    var priceOne = priceFirstLine?.InnerText;
                     var priceTwo = priceSecondLine?.InnerText;
                     var edition = editionLine?.InnerText;
                     var voice = voiceLine?.InnerText;
@@ -189,27 +193,32 @@ namespace PS_parser
                     var version = versionLine?.InnerText;
 
                     var priceres = helper.splitFirstPrice(priceOne);
-                    Console.WriteLine($"Поток {thread} номер {res++}/{gameList.Count} | {game}:{headerText}");
+                    gameInfo = $"{game} | {headerText}";
+                    Console.WriteLine($"Thread {thread} position {res++}/{gameList.Count} | {game}:{headerText}");
+
                     Log.Information($"{game}:{headerText}");
-                    Log.CloseAndFlush();
-                    node.sendGameData(game, headerText.Replace("%amp;", ""), version, priceres, helper.slitSecondPrice(priceTwo),
+
+                    node.sendGameData(game, headerText?.Replace("%amp;", ""), version, priceres, helper.slitSecondPrice(priceTwo),
                         helper.editionEdit(edition), voice, subtitles, release, 
                         discountOne, discountOneEnd, helper.discountTwoTrim(discountTwo));
 
                 }
-                countdownEvent.Signal();
-                //google.ReadEntries(node._gamesInfo);
-
+                Log.CloseAndFlush();
             } 
-            catch (Exception ex) { 
+            catch (Exception ex) {
+                Log.Logger = new LoggerConfiguration()
+                    .WriteTo.File("exc.txt")
+                    .CreateLogger();
                 Console.WriteLine("exc " + ex.StackTrace + $"\n {ex.Message}");
-                Log.Information("exc " + ex.StackTrace + $"\n {ex.Message}");
+                Log.Error("exc " + ex.StackTrace + $"\n {ex.Message} | {gameInfo}");
                 Log.CloseAndFlush();
             }
-           
-        }
+            finally
+            {
+                countdownEvent.Signal();
+            }
 
-        
+        }
 
         private void sendGameData(string game, string title, string version, string[] priceOne, string[] priceTwo, string edition, string voice, 
             string subtitles, string release, string discountOne, string discountOneEnd, string discountTwo)
@@ -218,11 +227,10 @@ namespace PS_parser
             {
                 lock (lockObject)
                 {
-                    _gamesInfo.Add(new List<object> { game, $"https://store.playstation.com/en-tr/product/{game}/", title, version, edition, priceOne[0], priceOne[1], discountOne, discountOneEnd, priceTwo[0], priceTwo[1], discountTwo, "", release, "url", voice, subtitles });
+                    _gamesInfo.Add(new List<object> { game ?? "", $"https://store.playstation.com/en-tr/product/{game}/", title ?? "", version ?? "", edition ?? "", priceOne[0], priceOne[1], discountOne ?? "", discountOneEnd ?? "", priceTwo[0], priceTwo[1], discountTwo ?? "", "", release ?? "", "url", voice ?? "", subtitles ?? "" });
                 }
             }
             catch (Exception e) { Console.WriteLine("exc " + e.Message + "\n" + e.StackTrace); }
         }
-            
     }
 }

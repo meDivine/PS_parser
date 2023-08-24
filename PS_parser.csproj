@@ -2,15 +2,25 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <BaseOutputPath>bin</BaseOutputPath>
+    <PackageOutputPath>$(OutputPath)\packs</PackageOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.61.0" />
-    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.61.0.3113" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.51" />
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.61.0.3148" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.52" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Serilog" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
@@ -18,9 +28,6 @@
 
   <ItemGroup>
     <None Update="google.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="proxy.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

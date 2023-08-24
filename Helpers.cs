@@ -75,11 +75,11 @@ namespace PS_parser
             return resultFirstPrice;
         }*/
 
-        public string[] splitFirstPrice(string price)
+        public string[] splitFirstPrice(string? price)
         {
             var delimiter = "TL";
             string[] resultFirstPrice = new string[2];
-            if (price.Contains("TL"))
+            if (price != null && price.Contains("TL"))
             {
                 string[] splitPriceOne = price.Split(new string[] { delimiter }, 2, StringSplitOptions.None);
                 resultFirstPrice[0] = splitPriceOne[0];
