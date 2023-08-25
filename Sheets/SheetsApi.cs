@@ -16,7 +16,7 @@ namespace PS_parser.Sheets
         private void Auth()
         {
             GoogleCredential credential;
-            using var stream = new FileStream("google.json", FileMode.Open, FileAccess.Read);
+            using FileStream stream = new(@"/root/parse/Config/proxy.json", FileMode.Open, FileAccess.Read);
             credential = GoogleCredential.FromStream(stream).CreateScoped(Scopes);
 
             Service = new SheetsService(new BaseClientService.Initializer()
@@ -31,25 +31,17 @@ namespace PS_parser.Sheets
             try
             {
                 ClearValuesRequest clearRequest = new();
-                var range = $"{Sheet}!A3:Q20000";
-                var requestDelete = Service.Spreadsheets.Values.Clear(clearRequest, SpreadSheetId, range);
+                string range = $"{Sheet}!A3:Q20000";
+                SpreadsheetsResource.ValuesResource.ClearRequest requestDelete = Service.Spreadsheets.Values.Clear(clearRequest, SpreadSheetId, range);
                 requestDelete.Execute();
                 ValueRange valueRange = new()
                 {
                     Values = values
                 };
-                var request =
+                SpreadsheetsResource.ValuesResource.AppendRequest request =
                     Service.Spreadsheets.Values.Append(valueRange, SpreadSheetId, range);
                 request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
                 request.Execute();
-                /*var range = $"{Sheet}!A1:H7";
-                var request = service.Spreadsheets.Values.Get(SpreadSheetId, range);
-                var response = request.Execute();
-                var values = response.Values;
-                foreach (var entry in values)
-                {
-                    Console.WriteLine($"{entry[1]}");
-                }*/
             }
             catch (Exception ex) { Console.WriteLine(ex.StackTrace); }
         }

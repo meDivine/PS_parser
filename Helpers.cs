@@ -48,36 +48,10 @@ namespace PS_parser
             }
             else return "";
         }
-        /*
-        public string[] splitFirstPrice(string price)
+
+        public string[] SplitFirstPrice(string? price)
         {
-            var delimiter = "TL";
-            string[] resultFirstPrice = new string[2];
-
-            if (price.Contains("Not available for purchase"))
-            {
-                resultFirstPrice[0] = "Not available for purchase";
-                resultFirstPrice[1] = "Not available for purchase";
-            }
-            else if ((!price.Contains("Free") && !price.Contains("Trial") && !price.Contains("Included") && !price.Contains("Save") && 
-                !price.Contains("Demo")) || price.Contains("TL"))
-            {
-                string[] splitPriceOne = price.Split(new string[] { delimiter }, 2, StringSplitOptions.None);
-                resultFirstPrice[0] = splitPriceOne[0];
-                resultFirstPrice[1] = splitPriceOne.Length > 1 ? splitPriceOne[1] : "";
-            }
-            else
-            {
-                resultFirstPrice[0] = "";
-                resultFirstPrice[1] = "";
-            }
-
-            return resultFirstPrice;
-        }*/
-
-        public string[] splitFirstPrice(string? price)
-        {
-            var delimiter = "TL";
+            string delimiter = "TL";
             string[] resultFirstPrice = new string[2];
             if (price != null && price.Contains("TL"))
             {
@@ -94,33 +68,9 @@ namespace PS_parser
             return resultFirstPrice;
         }
 
-        /*public string[] slitSecondPrice(string price)
-        {
-            var delimiter = "TL";
-            string[] resultSecondPrice = new string[2];
-
-
-            if ((!price.Contains("Free") && !price.Contains("Included") && !price.Contains("Add to Wishlist") && 
-                !price.Contains("PlayStation Plus Exclusive") && !price.Contains("Learn More") && price != "" && 
-                !price.Contains("Game Trial") && !price.Contains("Trial") && !price.Contains("trial") && 
-                !price.Contains("Included") && !price.Contains("Save") && !price.Contains("Demo") && !price.Contains("access this game")) || price.Contains("TL"))
-            {
-                string[] splitPriceTwo = price.Split(new string[] { delimiter }, 2, StringSplitOptions.None);
-                resultSecondPrice[0] = splitPriceTwo[0];
-                resultSecondPrice[1] = splitPriceTwo[1].Length > 1 ? splitPriceTwo[1].Replace(" TL", "") : "";
-            }
-            else
-            {
-                resultSecondPrice[0] = "";
-                resultSecondPrice[1] = "";
-            }
-
-            return resultSecondPrice;
-        }*/
-
         public string[] slitSecondPrice(string price)
         {
-            var delimiter = "TL";
+            string delimiter = "TL";
             string[] resultSecondPrice = new string[2];
 
 
