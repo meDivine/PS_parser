@@ -166,7 +166,7 @@ namespace PS_parser
             int res = 0;
             string gameInfo = string.Empty;
 
-            Proxy? proxyConfig = JsonConvert.DeserializeObject<Proxy>(File.ReadAllText(@"/root/parse/Config/proxy.json"));
+            Proxy? proxyConfig = JsonConvert.DeserializeObject<Proxy>(File.ReadAllText($@"/root/parse/Config/proxy.json"));
             Uri proxyUri = new(proxyConfig.ProxyUri);
             NetworkCredential proxyCredentials = new(proxyConfig.ProxyLogin, proxyConfig.ProxyPassword);
 

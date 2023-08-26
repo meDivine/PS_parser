@@ -19,7 +19,7 @@ namespace PS_parser
             Request req = new();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; AcmeInc/1.0)");
 
-            Proxy? proxyConfig = JsonConvert.DeserializeObject<Proxy>(File.ReadAllText(@"/root/parse/Config/proxy.json"));
+            Proxy? proxyConfig = JsonConvert.DeserializeObject<Proxy>(File.ReadAllText($@"/root/parse/Config/proxy.json"));
 
             Uri proxyUri = new(proxyConfig.ProxyUri);
             NetworkCredential proxyCredentials = new(proxyConfig.ProxyLogin, proxyConfig.ProxyPassword);

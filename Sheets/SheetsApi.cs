@@ -15,15 +15,22 @@ namespace PS_parser.Sheets
 
         private void Auth()
         {
-            GoogleCredential credential;
-            using FileStream stream = new(@"/root/parse/Config/proxy.json", FileMode.Open, FileAccess.Read);
-            credential = GoogleCredential.FromStream(stream).CreateScoped(Scopes);
-
-            Service = new SheetsService(new BaseClientService.Initializer()
+            try
             {
-                HttpClientInitializer = credential,
-                ApplicationName = ApplicationName
-            });
+                GoogleCredential credential;
+                using FileStream stream = new($@"/root/parse/Config/google.json", FileMode.Open, FileAccess.Read);
+                credential = GoogleCredential.FromStream(stream).CreateScoped(Scopes);
+
+                Service = new SheetsService(new BaseClientService.Initializer()
+                {
+                    HttpClientInitializer = credential,
+                    ApplicationName = ApplicationName
+                });
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.StackTrace);
+            }
         }
         public void ReadEntries(IList<IList<object>> values)
         {
