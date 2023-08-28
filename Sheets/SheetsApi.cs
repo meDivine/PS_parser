@@ -58,6 +58,7 @@ namespace PS_parser.Sheets
 
         private void WriteDateTime()
         {
+            Auth();
             try
             {
                 TimeZoneInfo moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow");
