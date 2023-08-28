@@ -4,6 +4,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Newtonsoft.Json.Linq;
 using System;
+using Serilog;
 
 namespace PS_parser.Sheets
 {
@@ -17,6 +18,9 @@ namespace PS_parser.Sheets
 
         private void Auth()
         {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.File(@"parser/exc.txt")
+                .CreateLogger();
             try
             {
                 GoogleCredential credential;
@@ -29,13 +33,18 @@ namespace PS_parser.Sheets
                     ApplicationName = ApplicationName
                 });
             }
-            catch(Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e.StackTrace);
+                Console.WriteLine(ex.StackTrace);
+                Log.Error("exc " + ex.StackTrace + $"\n {ex.Message}");
+                Log.CloseAndFlush();
             }
         }
         public void WriteEntries(IList<IList<object>> values)
         {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.File(@"parser/exc.txt")
+                .CreateLogger();
             Auth();
             try
             {
@@ -53,11 +62,19 @@ namespace PS_parser.Sheets
                 request.Execute();
                 WriteDateTime();
             }
-            catch (Exception ex) { Console.WriteLine(ex.StackTrace); }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.StackTrace);
+                Log.Error("exc " + ex.StackTrace + $"\n {ex.Message}");
+                Log.CloseAndFlush();
+            }
         }
 
         private void WriteDateTime()
         {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.File(@"parser/exc.txt")
+                .CreateLogger();
             Auth();
             try
             {
@@ -81,7 +98,11 @@ namespace PS_parser.Sheets
                 request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
                 request.Execute();
             }
-            catch (Exception ex) { Console.WriteLine(ex.StackTrace); }
+            catch (Exception ex) { 
+                Console.WriteLine(ex.StackTrace);
+                Log.Error("exc " + ex.StackTrace + $"\n {ex.Message}");
+                Log.CloseAndFlush();
+            }
         }
 
     }

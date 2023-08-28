@@ -160,7 +160,7 @@ namespace PS_parser
             HtmlDocument htmlDoc = new();
             GetNode node = new();
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.File("log.txt") 
+                .WriteTo.File(@"parser/log.txt") 
                 .CreateLogger();
 
             int res = 0;
@@ -224,7 +224,7 @@ namespace PS_parser
             } 
             catch (Exception ex) {
                 Log.Logger = new LoggerConfiguration()
-                    .WriteTo.File("exc.txt")
+                    .WriteTo.File(@"parser/exc.txt")
                     .CreateLogger();
                 Console.WriteLine("exc " + ex.StackTrace + $"\n {ex.Message}");
                 Log.Error("exc " + ex.StackTrace + $"\n {ex.Message} | {gameInfo}");
