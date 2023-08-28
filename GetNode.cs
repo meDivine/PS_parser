@@ -148,7 +148,7 @@ namespace PS_parser
             Console.WriteLine("All threads started");
             countdownEvent.Wait();
             Console.WriteLine("Write game data in google sheets...");
-            google.ReadEntries(_gamesInfo);
+            google.WriteEntries(_gamesInfo);
             await req.SendTelegram($"Table entry completed");
             Console.WriteLine("Table entry completed");
         }
