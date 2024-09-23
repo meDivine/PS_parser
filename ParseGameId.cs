@@ -8,23 +8,29 @@ namespace PS_parser
 {
     internal class ParseGameId
     {
-
-        private HtmlNodeCollection _nodes;
         private List<string> _gamesId = new();
 
         public async Task<List<string>> GetGamesRequest()
         {
-            using HttpClient client = new();
-            HtmlDocument htmlDoc = new();
             Request req = new();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; AcmeInc/1.0)");
+            await req.SendTelegram($"Start parsing PS5/4 Games");
 
+            var proxyClient = CreateHttpClientWithProxy();
+            await ParseGamesForPlatform(proxyClient, "PS5", "https://store.playstation.com/en-tr/category/4cbf39e2-5749-4970-ba81-93a489e4570c");
+            await ParseGamesForPlatform(proxyClient, "PS4", "https://store.playstation.com/en-tr/category/44d8bb20-653e-431e-8ad0-c0a365f68d2f");
+
+            await req.SendTelegram($"Finish parsing PS5/4 games");
+            return _gamesId;
+        }
+
+        private HttpClient CreateHttpClientWithProxy()
+        {
             Proxy? proxyConfig = JsonConvert.DeserializeObject<Proxy>(File.ReadAllText($@"/root/parse/Config/proxy.json"));
 
-            Uri proxyUri = new(proxyConfig.ProxyUri);
-            NetworkCredential proxyCredentials = new(proxyConfig.ProxyLogin, proxyConfig.ProxyPassword);
+            var proxyUri = new Uri(proxyConfig.ProxyUri);
+            var proxyCredentials = new NetworkCredential(proxyConfig.ProxyLogin, proxyConfig.ProxyPassword);
 
-            HttpClientHandler httpClientHandler = new()
+            var httpClientHandler = new HttpClientHandler
             {
                 Proxy = new WebProxy(proxyUri)
                 {
@@ -35,81 +41,59 @@ namespace PS_parser
                 UseProxy = true,
             };
 
-            HttpClient proxyClient = new(httpClientHandler);
+            var proxyClient = new HttpClient(httpClientHandler);
+            proxyClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; AcmeInc/1.0)");
 
-            HttpResponseMessage pagesPS5Request = await proxyClient.GetAsync("https://store.playstation.com/en-tr/category/4cbf39e2-5749-4970-ba81-93a489e4570c/1");
-            string pagesPS5 = await pagesPS5Request.Content.ReadAsStringAsync();
+            return proxyClient;
+        }
 
-            htmlDoc.LoadHtml(pagesPS5);
-            HtmlNode parseMaxPagesPS5 = htmlDoc.DocumentNode.SelectSingleNode("(//span[@class='psw-fill-x '])[5]");
-            string maxPagePS5 = parseMaxPagesPS5.InnerText;
-            await req.SendTelegram($"Start parsing PS5 Games");
+        private async Task ParseGamesForPlatform(HttpClient client, string platform, string url)
+        {
+            HtmlDocument htmlDoc = new();
+            string pagesContent = await client.GetStringAsync($"{url}/1");
+            htmlDoc.LoadHtml(pagesContent);
 
-
-            for (int i = 1; i <= int.Parse(maxPagePS5); i++)
-            {
-                HttpResponseMessage proxyResponse = await proxyClient.GetAsync($"https://store.playstation.com/en-tr/category/4cbf39e2-5749-4970-ba81-93a489e4570c/{i}");
-                string htmlCode = await proxyResponse.Content.ReadAsStringAsync();
-                htmlDoc.LoadHtml(htmlCode);
-                _nodes = htmlDoc.DocumentNode.SelectNodes("//ul[@class='psw-grid-list psw-l-grid']");
-                Console.WriteLine($"PS5 parsed: {i}/{maxPagePS5} page");
-
-                if (this._nodes != null)
-                {
-                    foreach (HtmlNode? headerNode in this._nodes)
-                    {
-                        string headerText = headerNode.InnerHtml;
-                        string pattern = @"href=""/en-tr/product/(.*?)""";
-                        MatchCollection matches = Regex.Matches(headerText, pattern);
-
-                        foreach (Match match in matches.Cast<Match>())
-                        {
-                            if (match.Groups.Count > 1)
-                            {
-                                string hrefValue = match.Groups[1].Value;
-                                _gamesId.Add(hrefValue);
-                            }
-                        }
-                    }
-                }
-            }
-
-            HttpResponseMessage pagesPS4Request = await proxyClient.GetAsync($"https://store.playstation.com/en-tr/category/44d8bb20-653e-431e-8ad0-c0a365f68d2f/1");
-            string pagesPS4 = await pagesPS4Request.Content.ReadAsStringAsync();
-            htmlDoc.LoadHtml(pagesPS4);
             HtmlNode parseMaxPages = htmlDoc.DocumentNode.SelectSingleNode("(//span[@class='psw-fill-x '])[5]");
-            string maxPage = parseMaxPages.InnerText;
-            await req.SendTelegram($"Start parsing PS4 Games");
+            int maxPages = int.Parse(parseMaxPages.InnerText);
+            Console.WriteLine($"Start parsing {platform} Games");
 
-            for (int i = 1; i <= int.Parse(maxPage); i++)
+            for (int i = 1; i <= maxPages; i++)
             {
-                HttpResponseMessage proxyResponse = await proxyClient.GetAsync($"https://store.playstation.com/en-tr/category/44d8bb20-653e-431e-8ad0-c0a365f68d2f/{i}");
-                string htmlCode = await proxyResponse.Content.ReadAsStringAsync();
-                htmlDoc.LoadHtml(htmlCode);
-                _nodes = htmlDoc.DocumentNode.SelectNodes("//ul[@class='psw-grid-list psw-l-grid']");
-                Console.WriteLine($"PS4 parsed: {i}/{maxPage} page");
+                string pageUrl = $"{url}/{i}";
+                await ParsePage(client, pageUrl);
+                Console.WriteLine($"{platform} parsed: {i}/{maxPages} page");
+            }
+        }
 
-                if (this._nodes != null)
+        private async Task ParsePage(HttpClient client, string pageUrl)
+        {
+            HtmlDocument htmlDoc = new();
+            string htmlCode = await client.GetStringAsync(pageUrl);
+            htmlDoc.LoadHtml(htmlCode);
+
+            var nodes = htmlDoc.DocumentNode.SelectNodes("//ul[@class='psw-grid-list psw-l-grid']");
+            if (nodes != null)
+            {
+                foreach (var headerNode in nodes)
                 {
-                    foreach (HtmlNode? headerNode in this._nodes)
-                    {
-                        string headerText = headerNode.InnerHtml;
-                        string pattern = @"href=""/en-tr/product/(.*?)""";
-                        MatchCollection matches = Regex.Matches(headerText, pattern);
-
-                        foreach (Match match in matches.Cast<Match>())
-                        {
-                            if (match.Groups.Count > 1)
-                            {
-                                string hrefValue = match.Groups[1].Value;
-                                _gamesId.Add(hrefValue);
-                            }
-                        }
-                    }
+                    ExtractGameIdsFromHtml(headerNode.InnerHtml);
                 }
             }
-            await req.SendTelegram($"Finish parsing PS5/4 games");
-            return _gamesId;
+        }
+
+        private void ExtractGameIdsFromHtml(string html)
+        {
+            string pattern = @"href=""/en-tr/product/(.*?)""";
+            var matches = Regex.Matches(html, pattern);
+
+            foreach (Match match in matches)
+            {
+                if (match.Groups.Count > 1)
+                {
+                    string hrefValue = match.Groups[1].Value;
+                    _gamesId.Add(hrefValue);
+                }
+            }
         }
     }
 }
